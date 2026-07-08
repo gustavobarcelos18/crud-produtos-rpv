@@ -6,7 +6,7 @@ type Produto = {
   id: number;
   nome: string;
   descricao: string;
-  preco: number;
+  preco: number | string;
   quantidade: number;
 };
 
@@ -42,67 +42,86 @@ export default function Produtos() {
     }
   };
 
-  return (
-    <div className="max-w-5xl mx-auto p-4">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Produtos</h1>
-        <Link
-          href="/produtos/novo"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Novo Produto
-        </Link>
-      </div>
+  const formatarPreco = (preco: number | string) => {
+    const valor = typeof preco === 'number' ? preco : Number(String(preco).replace(/[^\d,.-]/g, '').replace('.', '').replace(',', '.'));
 
-      <div className="overflow-x-auto bg-white rounded shadow">
-        {carregando ? (
-          <p className="p-6 text-gray-600">Carregando produtos...</p>
-        ) : produtos.length === 0 ? (
-          <p className="p-6 text-gray-600">Nenhum produto cadastrado.</p>
-        ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nome
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Preço
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Quantidade
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {produtos.map((produto) => (
-                <tr key={produto.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">{produto.nome}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">R$ {produto.preco.toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{produto.quantidade}</td>
-                  <td className="px-6 py-4 whitespace-nowrap space-x-2">
-                    <Link
-                      href={`/produtos/${produto.id}`}
-                      className="inline-block px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                    >
-                      Editar
-                    </Link>
-                    <button
-                      type="button"
-                      className="inline-block px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-                      onClick={() => handleDelete(produto.id)}
-                    >
-                      Excluir
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+    if (Number.isNaN(valor)) {
+      return 'R$ 0,00';
+    }
+
+    return `R$ ${valor.toFixed(2).replace('.', ',')}`;
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6 text-gray-900">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Produtos</h1>
+            <p className="text-sm text-gray-600">Gerencie seu catálogo de produtos.</p>
+          </div>
+          <Link
+            href="/produtos/novo"
+            className="inline-flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            Novo Produto
+          </Link>
+        </div>
+
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          {carregando ? (
+            <p className="p-6 text-gray-600">Carregando produtos...</p>
+          ) : produtos.length === 0 ? (
+            <p className="p-6 text-gray-600">Nenhum produto cadastrado.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Nome
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Preço
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Quantidade
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {produtos.map((produto) => (
+                    <tr key={produto.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{produto.nome}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-700">{formatarPreco(produto.preco)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-700">{produto.quantidade}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex flex-wrap gap-2">
+                          <Link
+                            href={`/produtos/${produto.id}`}
+                            className="inline-flex items-center justify-center px-3 py-1.5 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition"
+                          >
+                            Editar
+                          </Link>
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+                            onClick={() => handleDelete(produto.id)}
+                          >
+                            Excluir
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,39 @@
 import { Request, Response } from 'express'
 import { db } from '../database/connection'
 
+const parseDecimalValue = (value: unknown) => {
+    if (typeof value === 'number') {
+        return value
+    }
+
+    if (typeof value === 'string') {
+        const normalized = value.trim().replace(/\./g, '').replace(',', '.')
+        const parsed = Number(normalized)
+
+        if (!Number.isNaN(parsed)) {
+            return parsed
+        }
+    }
+
+    return Number.NaN
+}
+
+const parseIntegerValue = (value: unknown) => {
+    if (typeof value === 'number') {
+        return value
+    }
+
+    if (typeof value === 'string') {
+        const parsed = Number(value)
+
+        if (Number.isInteger(parsed)) {
+            return parsed
+        }
+    }
+
+    return Number.NaN
+}
+
 export const getProducts = async (req: Request, res: Response) => {
     try {
         const q = String(req.query.q || '').trim()
@@ -46,8 +79,8 @@ export const createProduct = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Todos os campos são obrigatórios.' })
         }
 
-        const precoNumero = Number(preco)
-        const quantidadeNumero = Number(quantidade)
+        const precoNumero = parseDecimalValue(preco)
+        const quantidadeNumero = parseIntegerValue(quantidade)
 
         if (Number.isNaN(precoNumero) || Number.isNaN(quantidadeNumero)) {
             return res.status(400).json({ message: 'Preço e quantidade devem ser números.' })
@@ -86,8 +119,8 @@ export const updateProduct = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Todos os campos são obrigatórios.' })
         }
 
-        const precoNumero = Number(preco)
-        const quantidadeNumero = Number(quantidade)
+        const precoNumero = parseDecimalValue(preco)
+        const quantidadeNumero = parseIntegerValue(quantidade)
 
         if (Number.isNaN(precoNumero) || Number.isNaN(quantidadeNumero)) {
             return res.status(400).json({ message: 'Preço e quantidade devem ser números.' })
